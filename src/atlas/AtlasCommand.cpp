@@ -1,5 +1,5 @@
-#include "Command.h"
-#include "Communication.h"
+#include "AtlasCommand.h"
+#include "common/Communication.h"
 
 void inputCommands();
 void sendHelp();
@@ -7,9 +7,9 @@ void sendUnknown(String input);
 
 void startMessage()
 {
-  Serial.println("====================");
-  Serial.println("Ground Station v0.1");
-  Serial.println("====================");
+  Serial.println("==============");
+  Serial.println("Atlas Station");
+  Serial.println("==============");
   Serial.println("");
   inputCommands();
   Serial.println("");
@@ -59,14 +59,14 @@ CommandType parseCommand(String input)
   return CommandType::UNKNOWN;
 }
 
-void executeCommand(CommandType receivedCommand, String input)
+void executeCommand(CommandType userCommand, String input)
 {
-  switch (receivedCommand)
+  switch (userCommand)
   {
   case CommandType::ARM:  
   case CommandType::DISARM:
   case CommandType::STATUS:
-    sendCommand(receivedCommand);
+    send2Firefly(userCommand);
     break;
 
   case CommandType::HELP:

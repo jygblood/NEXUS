@@ -13,4 +13,4 @@ enum class CommandType : uint8_t
 void startMessage();
 
 CommandType parseCommand(String input);
-void executeCommand(CommandType receivedCommand, String input);
+void executeCommand(CommandType userCommand, String input);

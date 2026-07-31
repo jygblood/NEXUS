@@ -1,4 +1,7 @@
 #pragma once
-#include "Command.h"
+#include "atlas/AtlasCommand.h"
+#include "firefly/FireflyCommand.h"
+#include "firefly/Firefly.h"
 
-void sendCommand(CommandType command);
+void send2Firefly(CommandType command);
+void send2Atlas(VehicleState respond);
