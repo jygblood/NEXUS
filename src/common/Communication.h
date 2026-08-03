@@ -1,7 +1,12 @@
 #pragma once
-#include "atlas/AtlasCommand.h"
-#include "firefly/FireflyCommand.h"
-#include "firefly/Firefly.h"
+#include "protocol/Packet.h"
 
-void send2Firefly(CommandType command);
-void send2Atlas(VehicleState respond);
+
+void sendCommand(CommandID command);
+bool receiveCommand(CommandID& command);
+
+void sendVehicleState(VehicleState state);
+bool receiveVehicleState(VehicleState& state);
+
+void sendHeartbeat();
+void sendHeartbeatAck();

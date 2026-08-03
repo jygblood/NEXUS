@@ -17,12 +17,12 @@ void armFirefly()
     {
         currentState = VehicleState::ARMED;
 
-        send2Atlas(VehicleState::ARMED);
+        sendVehicleState(VehicleState::ARMED);
         Serial.println("Firefly armed");
     }
     else
     {
-        send2Atlas(VehicleState::FAULT);
+        sendVehicleState(VehicleState::NOT_AVAIL);
         Serial.println("Cannot arm Firefly");
     }
 }
@@ -31,13 +31,13 @@ void disarmFirefly()
 {
     currentState = VehicleState::DISARMED;
 
-    send2Atlas(VehicleState::DISARMED);
+    sendVehicleState(VehicleState::DISARMED);
     Serial.println("Firefly disarmed");
 }
 
 void comFault()
 {
-    send2Atlas(VehicleState::COM_FAULT);
+    sendVehicleState(VehicleState::COM_FAULT);
     Serial.println("Com Fault");
 }
 
@@ -48,28 +48,28 @@ void printFireflyStatus()
     switch (currentState)
     {
     case VehicleState::BOOTING:
-        send2Atlas(VehicleState::BOOTING);
+        sendVehicleState(VehicleState::BOOTING);
         Serial.println("State: BOOTING");
         break;
 
     case VehicleState::DISARMED:
-        send2Atlas(VehicleState::DISARMED);
+        sendVehicleState(VehicleState::DISARMED);
         Serial.println("State: DISARMED");
         break;
 
     case VehicleState::ARMED:
-        send2Atlas(VehicleState::ARMED);
+        sendVehicleState(VehicleState::ARMED);
         Serial.println("State: ARMED");
         break;
 
     case VehicleState::FAULT:
-        send2Atlas(VehicleState::FAULT);
+        sendVehicleState(VehicleState::FAULT);
         Serial.println("State: FAULT");
         break;
     }
 }
 
-VehicleState getFireflyStatus()
+VehicleState getFireflyState()
 {
     return currentState;
 }

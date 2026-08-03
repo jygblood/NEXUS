@@ -7,20 +7,17 @@ void uartSetup()
     telemetrySerial.begin(115200, SERIAL_8N1, 16, 17);
 }
 
-void uartSend(String message)
+bool uartAvailable(size_t bytes)
 {
-    telemetrySerial.println(message);
+    return telemetrySerial.available() >= bytes;
 }
 
-bool uartAvail()
+void uartSend(const uint8_t* data, size_t length)
 {
-    return telemetrySerial.available();
+    telemetrySerial.write(data, length);
 }
 
-String uartReceive()
-{
-    String message = telemetrySerial.readStringUntil('\n');
-    message.trim();
-    
-    return message;
+size_t uartReceive(uint8_t* buffer, size_t maxLength)
+{   
+    return telemetrySerial.readBytes(buffer, maxLength);
 }

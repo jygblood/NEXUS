@@ -1,13 +1,7 @@
 #pragma once
 
-enum class VehicleState
-{
-    BOOTING,
-    DISARMED,
-    ARMED,
-    FAULT,
-    COM_FAULT
-};
+#include "protocol/Packet.h"
+
 
 void initializeFirefly();
 

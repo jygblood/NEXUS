@@ -1,16 +1,10 @@
 #pragma once
 #include <Arduino.h>
-
-enum class CommandType : uint8_t
-{
-  ARM,
-  DISARM,
-  STATUS,
-  HELP,
-  UNKNOWN
-};
+#include "protocol/Packet.h"
 
 void startMessage();
 
-CommandType parseCommand(String input);
-void executeCommand(CommandType userCommand, String input);
+CommandID parseCommand(String input);
+void executeCommand(CommandID userCommand, String input);
+
+void printVehicleState(VehicleState state);

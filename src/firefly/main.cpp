@@ -1,7 +1,15 @@
 #include <Arduino.h>
-#include "uart/UART.h"
 #include "firefly/Firefly.h"
 #include "firefly/FireflyCommand.h"
+#include "protocol/Packet.h"
+#include "common/Communication.h"
+#include "uart/UART.h"
+
+
+uint32_t lastValidCommand = 0;
+bool atlasLinkLost = false;
+
+constexpr uint32_t ATLAS_LINK_TIMEOUT_MS = 3000;
 
 void setup()
 {
@@ -12,35 +20,42 @@ void setup()
     Serial.println("=======================");
     Serial.println("Firefly Controller");
     Serial.println("=======================");
+    Serial.println("");
 
     initializeFirefly();
+
+    lastValidCommand = millis();
   
 }
 
 void loop()
 {
-    if (uartAvail())
+    CommandID command;
+
+    if (receiveCommand(command))
     {
-        String received = uartReceive();
-        Serial.print("Received: ");
-        Serial.println(received);
-        
-        if (received == "ARM")
+        lastValidCommand = millis();
+
+        if (atlasLinkLost)
         {
-            handleCommand(RecCommandType::ARM);
+            atlasLinkLost = false;
+            Serial.println("Atlas link restored.");
         }
-        else if (received == "DISARM")
+
+        if (command == CommandID::HEARTBEAT)
         {
-            handleCommand(RecCommandType::DISARM);
-        }
-        else if (received == "STATUS")
-        {
-            handleCommand(RecCommandType::STATUS);
+            sendHeartbeatAck();
         }
         else
         {
-            handleCommand(RecCommandType::FAULT);
+            handleCommand(command);
         }
-        
     }
+
+    if (!atlasLinkLost && millis() - lastValidCommand >= ATLAS_LINK_TIMEOUT_MS)
+    {
+        atlasLinkLost = true;
+        comFault();
+    }
+        
 }

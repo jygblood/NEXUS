@@ -1,60 +1,148 @@
 #include <Arduino.h>
 #include "Communication.h"
 #include "uart/UART.h"
+#include "protocol/Packet.h"
 
-void send2Firefly(CommandType command)
+
+namespace
 {
-  switch (command)
+  bool receiveFramePayload(uint8_t& payload)
   {
-    case CommandType::ARM:
-      uartSend("ARM");
-      Serial.println("[TX] ARM");
-      break;
+    enum class ReceiveStep
+    {
+      WAITING_FOR_HEADER,
+      WAITING_FOR_PAYLOAD,
+      WAITING_FOR_FOOTER
+    };
 
-    case CommandType::DISARM:
-      uartSend("DISARM");
-      Serial.println("[TX] DISARM");
-      break;
+    static ReceiveStep step = ReceiveStep::WAITING_FOR_HEADER;
+    static uint8_t receivedPayload = 0;
 
-    case CommandType::STATUS:
-      uartSend("STATUS");
-      Serial.println("[TX] STATUS");
-      break;
+    while (uartAvailable(1))
+    {
+      uint8_t byte;
 
-    default:
-      break;
+      if (uartReceive(&byte, 1) != 1)
+      {
+        return false;
+      }
+      
+      switch (step)
+      {
+      case ReceiveStep::WAITING_FOR_HEADER:
+        if (byte == PACKET_HEADER)
+        {
+          step = ReceiveStep::WAITING_FOR_PAYLOAD;
+        }
+        break;
+
+      case ReceiveStep::WAITING_FOR_PAYLOAD:
+        receivedPayload = byte;
+        step = ReceiveStep::WAITING_FOR_FOOTER;
+        break;
+
+      case ReceiveStep::WAITING_FOR_FOOTER:
+        if (byte ==PACKET_FOOTER)
+        {
+          payload = receivedPayload;
+          step = ReceiveStep::WAITING_FOR_HEADER;
+          return true;
+        }
+
+        step = (byte == PACKET_HEADER)
+          ? ReceiveStep::WAITING_FOR_PAYLOAD
+          : ReceiveStep::WAITING_FOR_HEADER;
+        break;
+      }
     }
+    return false;
+  }
 }
 
-void send2Atlas(VehicleState respond)
+void sendCommand(CommandID command)
 {
-  switch (respond)
+  CommandPacket packet
   {
-    case VehicleState::ARMED:
-      uartSend("Firefly ARMED");
-      Serial.println("[TX] ARMED");
-      break;
+    PACKET_HEADER,
+    command,
+    PACKET_FOOTER
+  };
 
-    case VehicleState::DISARMED:
-      uartSend("Firefly DISARMED");
-      Serial.println("[TX] DISARMED");
-      break;
+  uartSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
 
-    case VehicleState::BOOTING:
-      uartSend("Firefly BOOTING");
-      Serial.println("[TX] BOOTING");
-      break;
+};
 
-    case VehicleState::FAULT:
-      uartSend("Firefly FAULT");
-      Serial.println("[TX] FAULT");
-      break;
+void sendHeartbeat()
+{
+  sendCommand(CommandID::HEARTBEAT);
+}
 
-    case VehicleState::COM_FAULT:
-      uartSend("COM_FAULT");
-      Serial.println("[TX] COM_FAULT");
+void sendHeartbeatAck()
+{
+  sendVehicleState(VehicleState::HEARTBEAT_ACK);
+}
 
-    default:
-      break;
-    }
+bool receiveCommand(CommandID& command)
+{
+  uint8_t payload;
+
+  if (!receiveFramePayload(payload))
+  {
+      return false;
+  }
+
+  CommandID receivedCommand = static_cast<CommandID>(payload);
+
+  switch (receivedCommand)
+  {
+      case CommandID::ARM:
+      case CommandID::DISARM:
+      case CommandID::STATUS:
+      case CommandID::HEARTBEAT:
+          command = receivedCommand;
+          return true;
+
+      default:
+          return false;
+  }
+}
+
+void sendVehicleState(VehicleState state)
+{
+  VehicleStatePacket packet
+  {
+    PACKET_HEADER,
+    state,
+    PACKET_FOOTER
+  };
+
+  uartSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
+}
+
+bool receiveVehicleState(VehicleState& state)
+{
+  uint8_t payload;
+
+  if (!receiveFramePayload(payload))
+  {
+      return false;
+  }
+
+  VehicleState receivedState = static_cast<VehicleState>(payload);
+
+  switch (receivedState)
+  {
+      case VehicleState::BOOTING:
+      case VehicleState::DISARMED:
+      case VehicleState::ARMED:
+      case VehicleState::FAULT:
+      case VehicleState::COM_FAULT:
+      case VehicleState::NOT_AVAIL:
+      case VehicleState::HEARTBEAT_ACK:
+          state = receivedState;
+          return true;
+
+      default:
+          return false;
+  }
 }

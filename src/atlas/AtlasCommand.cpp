@@ -1,5 +1,6 @@
 #include "AtlasCommand.h"
 #include "common/Communication.h"
+#include "protocol/Packet.h"
 
 void inputCommands();
 void sendHelp();
@@ -40,41 +41,89 @@ void sendUnknown(String input)
   sendHelp();
 }
 
-CommandType parseCommand(String input)
+CommandID parseCommand(String input)
 {
   input.toUpperCase();
 
   if (input == "ARM" || input == "1")
-    return CommandType::ARM;
+    {
+    // Serial.println("[CMD] 1");
+    return CommandID::ARM;
+    }
   
   if (input == "DISARM" || input == "2")
-    return CommandType::DISARM;
+    {
+    // Serial.println("[CMD] 2");
+    return CommandID::DISARM;
+    }
 
   if (input == "STATUS" || input == "3")
-    return CommandType::STATUS;
+    {
+    // Serial.println("[CMD] 3");
+    return CommandID::STATUS;
+    }
 
   if (input == "HELP" || input == "4")
-    return CommandType::HELP;
+    {
+    // Serial.println("[CMD] 4");
+    return CommandID::HELP;
+    }
 
-  return CommandType::UNKNOWN;
+  return CommandID::UNKNOWN;
 }
 
-void executeCommand(CommandType userCommand, String input)
+void executeCommand(CommandID userCommand, String input)
 {
   switch (userCommand)
   {
-  case CommandType::ARM:  
-  case CommandType::DISARM:
-  case CommandType::STATUS:
-    send2Firefly(userCommand);
+  case CommandID::ARM:  
+  case CommandID::DISARM:
+  case CommandID::STATUS:
+    sendCommand(userCommand);
     break;
 
-  case CommandType::HELP:
+  case CommandID::HELP:
     sendHelp();
     break;
 
-  case CommandType::UNKNOWN:
+  case CommandID::UNKNOWN:
     sendUnknown(input);
     break;
   }
+}
+
+void printVehicleState(VehicleState state)
+{
+    Serial.println("Vehicle responds: ");
+
+    switch (state)
+    {
+    case VehicleState::BOOTING:
+        Serial.println("BOOTING");
+        break;
+
+    case VehicleState::DISARMED:
+        Serial.println("DISARMED");
+        break;
+
+    case VehicleState::ARMED:
+        Serial.println("ARMED");
+        break;
+
+    case VehicleState::FAULT:
+        Serial.println("FAULT");
+        break;
+
+    case VehicleState::COM_FAULT:
+        Serial.println("COM_FAULT");
+        break;
+
+    case VehicleState::NOT_AVAIL:
+        Serial.println("NOT AVAILABLE");
+        break;
+    
+    default:
+        Serial.println("UNKNOWN STATE");
+        break;
+    }
 }

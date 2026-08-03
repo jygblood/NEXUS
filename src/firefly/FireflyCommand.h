@@ -1,13 +1,6 @@
 #pragma once
 #include <Arduino.h>
-
-enum class RecCommandType : uint8_t
-{
-    ARM,
-    DISARM,
-    STATUS,
-    FAULT
-};
+#include "protocol/Packet.h"
 
 
-void handleCommand(RecCommandType command);
+void handleCommand(CommandID command);
