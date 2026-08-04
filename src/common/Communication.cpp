@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Communication.h"
-#include "uart/UART.h"
 #include "protocol/Packet.h"
+#include "transport/Transport.h"
 
 
 namespace
@@ -18,11 +18,11 @@ namespace
     static ReceiveStep step = ReceiveStep::WAITING_FOR_HEADER;
     static uint8_t receivedPayload = 0;
 
-    while (uartAvailable(1))
+    while (transportAvailable(1))
     {
       uint8_t byte;
 
-      if (uartReceive(&byte, 1) != 1)
+      if (transportReceive(&byte, 1) != 1)
       {
         return false;
       }
@@ -68,7 +68,7 @@ void sendCommand(CommandID command)
     PACKET_FOOTER
   };
 
-  uartSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
+  transportSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
 
 };
 
@@ -116,7 +116,7 @@ void sendVehicleState(VehicleState state)
     PACKET_FOOTER
   };
 
-  uartSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
+  transportSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
 }
 
 bool receiveVehicleState(VehicleState& state)

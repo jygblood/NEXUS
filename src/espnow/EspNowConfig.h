@@ -1,0 +1,8 @@
+#pragma once
+
+#include <stdint.h>
+
+constexpr uint8_t ESPNOW_CHANNEL = 1;
+
+constexpr uint8_t ATLAS_MAC[6] = {0xF4, 0x2D, 0xC9, 0x6C, 0x91, 0xC4};
+constexpr uint8_t FIREFLY_MAC[6] = {0xF4, 0x2D, 0xC9, 0x6C, 0x84, 0xCC};

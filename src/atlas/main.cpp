@@ -1,6 +1,8 @@
 #include <Arduino.h>
+#include <WiFi.h>
+
 #include "atlas/AtlasCommand.h"
-#include "uart/UART.h"
+#include "transport/Transport.h"
 #include "common/Communication.h"
 
 
@@ -16,7 +18,9 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000);
-    uartSetup();
+    WiFi.mode(WIFI_STA);
+
+    transportSetup();
     startMessage();
     Serial.println("Waiting for Firefly link....");
 }

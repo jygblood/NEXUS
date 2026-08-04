@@ -1,9 +1,11 @@
 #include <Arduino.h>
+#include <WiFi.h>
+
 #include "firefly/Firefly.h"
 #include "firefly/FireflyCommand.h"
 #include "protocol/Packet.h"
 #include "common/Communication.h"
-#include "uart/UART.h"
+#include "transport/Transport.h"
 
 
 uint32_t lastValidCommand = 0;
@@ -15,7 +17,9 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000);
-    uartSetup();
+    WiFi.mode(WIFI_STA);
+
+    transportSetup();
 
     Serial.println("=======================");
     Serial.println("Firefly Controller");
