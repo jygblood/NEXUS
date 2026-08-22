@@ -19,11 +19,13 @@ namespace
     portMUX_TYPE receiveMutex = portMUX_INITIALIZER_UNLOCKED;
 
 #if defined(NEXUS_ROLE_ATLAS)
-    const uint8_t* peerMac = FIREFLY_MAC;
+    const uint8_t* peerMac = BADGER_MAC;
 #elif defined(NEXUS_ROLE_FIREFLY)
     const uint8_t* peerMac = ATLAS_MAC;
+#elif defined(NEXUS_ROLE_BADGER)
+    const uint8_t* peerMac = ATLAS_MAC;
 #else
-    #error "Define NEXUS_ROLE_ATLAS or NEXUS_ROLE_FIREFLY"
+    #error "Define NEXUS_ROLE_ATLAS or NEXUS_ROLE_FIREFLY or NEXUS_ROLE_BADGER"
 #endif
 
     size_t bufferedByteCount()

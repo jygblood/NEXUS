@@ -6,7 +6,7 @@
 #include "common/Communication.h"
 
 
-bool fireflyReady = false;
+bool vehicleReady = false;
 
 uint32_t lastHeartbeatSent = 0;
 uint32_t lastValidResponse = 0;
@@ -20,9 +20,10 @@ void setup()
     delay(1000);
     WiFi.mode(WIFI_STA);
 
+    // display setup
     transportSetup();
     startMessage();
-    Serial.println("Waiting for Firefly link....");
+    Serial.println("Waiting for vehicle link....");
 }
 
 void loop()
@@ -38,10 +39,10 @@ void loop()
     {
         lastValidResponse = millis();
 
-        if (!fireflyReady)
+        if (!vehicleReady)
         {
-            fireflyReady = true;
-            Serial.println("Firefly link synchronized.");
+            vehicleReady = true;
+            Serial.println("Vehicle link synchronized.");
         }
         
         // // debug ACK check
@@ -62,10 +63,10 @@ void loop()
         lastHeartbeatSent = millis();
     }
 
-    if (fireflyReady && millis() - lastValidResponse >= LINK_TIMEOUT_MS)
+    if (vehicleReady && millis() - lastValidResponse >= LINK_TIMEOUT_MS)
     {
-        fireflyReady = false;
-        Serial.println("Firefly link lost.");
+        vehicleReady = false;
+        Serial.println("Vehicle link lost.");
     }
     
     static String input;
@@ -85,13 +86,13 @@ void loop()
                 {
                     executeCommand(userCommand,input);
                 }
-                else if (fireflyReady)
+                else if (vehicleReady)
                 {
                     executeCommand(userCommand, input);
                 }
                 else
                 {
-                    Serial.println("Waiting for Firefly link. Command not sent.");
+                    Serial.println("Waiting for vehicle link. Command not sent.");
                 }
                 
             }
