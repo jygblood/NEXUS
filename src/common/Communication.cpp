@@ -98,6 +98,9 @@ bool receiveCommand(CommandID& command)
       case CommandID::ARM:
       case CommandID::DISARM:
       case CommandID::STATUS:
+      // Testing motor actuation
+      case CommandID::TEST_FORWARD:
+      case CommandID::TEST_REVERSE:
       case CommandID::HEARTBEAT:
           command = receivedCommand;
           return true;

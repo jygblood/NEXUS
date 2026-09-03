@@ -13,3 +13,6 @@ void printBadgerStatus();
 void comFault();
 
 VehicleState getBadgerState();
+
+void testBadgerForward();
+void testBadgerReverse();

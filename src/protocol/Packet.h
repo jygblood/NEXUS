@@ -10,6 +10,8 @@ enum class CommandID : uint8_t
     ARM = 0x01,
     DISARM = 0x02,
     STATUS = 0x03,
+    TEST_FORWARD = 0x10,
+    TEST_REVERSE = 0x11,
     HELP = 0x04,
     UNKNOWN = 0x05,
     HEARTBEAT = 0xF0

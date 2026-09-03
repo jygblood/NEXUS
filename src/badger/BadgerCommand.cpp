@@ -21,6 +21,14 @@ void handleCommand(CommandID command)
         printBadgerStatus();
         break;
 
+    case CommandID::TEST_FORWARD:
+        testBadgerForward();
+        break;
+
+    case CommandID::TEST_REVERSE:
+        testBadgerReverse();
+        break;
+
     default:
         comFault();
         Serial.println("Unknown command");

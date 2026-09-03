@@ -23,6 +23,8 @@ void inputCommands()
   Serial.println("2. DISARM");
   Serial.println("3. STATUS");
   Serial.println("4. HELP");
+  Serial.println("5. TEST FORWARD");
+  Serial.println("6. TEST REVERSE");
   Serial.println("");
 }
 
@@ -69,6 +71,18 @@ CommandID parseCommand(String input)
     return CommandID::HELP;
     }
 
+  if (input == "TEST FORWARD" || input == "5")
+    {
+    // Serial.println("[CMD] 4");
+    return CommandID::TEST_FORWARD;
+    }
+
+  if (input == "TEST REVERSE" || input == "6")
+    {
+    // Serial.println("[CMD] 4");
+    return CommandID::TEST_REVERSE;
+    }
+
   return CommandID::UNKNOWN;
 }
 
@@ -79,6 +93,9 @@ void executeCommand(CommandID userCommand, String input)
   case CommandID::ARM:  
   case CommandID::DISARM:
   case CommandID::STATUS:
+  // Test motor actuation
+  case CommandID::TEST_FORWARD:
+  case CommandID::TEST_REVERSE:
     sendCommand(userCommand);
     break;
 

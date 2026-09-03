@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Badger.h"
+#include "BadgerControl.h"
 #include "common/Communication.h"
 
 VehicleState currentState = VehicleState::BOOTING;
@@ -72,4 +73,26 @@ void printBadgerStatus()
 VehicleState getBadgerState()
 {
     return currentState;
+}
+
+void testBadgerForward()
+{
+    if (currentState != VehicleState::ARMED)
+    {
+        sendVehicleState(VehicleState::NOT_AVAIL);
+        return;
+    }
+
+    startForwardTest();
+}
+
+void testBadgerReverse()
+{
+    if (currentState != VehicleState::ARMED)
+    {
+        sendVehicleState(VehicleState::NOT_AVAIL);
+        return;
+    }
+
+    startReverseTest();
 }

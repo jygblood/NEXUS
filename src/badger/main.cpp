@@ -3,6 +3,7 @@
 
 #include "badger/Badger.h"
 #include "badger/BadgerCommand.h"
+#include "badger/BadgerControl.h"
 #include "protocol/Packet.h"
 #include "common/Communication.h"
 #include "transport/Transport.h"
@@ -26,6 +27,7 @@ void setup()
     Serial.println("");
 
     initializeBadger();
+    badgerControlSetup();
 
     lastValidCommand = millis();
 }
@@ -59,4 +61,6 @@ void loop()
         atlasLinkLost = true;
         comFault();
     }
+
+    updateBadgerControl();
 }
