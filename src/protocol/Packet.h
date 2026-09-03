@@ -21,6 +21,7 @@ struct CommandPacket
 {
     uint8_t header;
     CommandID command;
+    uint8_t data;
     uint8_t footer;
 };
 
@@ -39,8 +40,9 @@ struct VehicleStatePacket
 {
     uint8_t header;
     VehicleState state;
+    uint8_t data;
     uint8_t footer;
 };
 
-static_assert(sizeof(CommandPacket) == 3);
-static_assert(sizeof(VehicleStatePacket) == 3);
+static_assert(sizeof(CommandPacket) == 4);
+static_assert(sizeof(VehicleStatePacket) == 4);

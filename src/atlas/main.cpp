@@ -34,8 +34,9 @@ void loop()
     // delay(5000);
 
     VehicleState state;
+    uint8_t stateData;
 
-    if (receiveVehicleState(state))
+    if (receiveVehicleState(state, stateData))
     {
         lastValidResponse = millis();
 

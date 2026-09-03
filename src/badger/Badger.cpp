@@ -75,7 +75,7 @@ VehicleState getBadgerState()
     return currentState;
 }
 
-void testBadgerForward()
+void testBadgerForward(uint8_t duty)
 {
     if (currentState != VehicleState::ARMED)
     {
@@ -83,10 +83,10 @@ void testBadgerForward()
         return;
     }
 
-    startForwardTest();
+    startForwardTest(duty);
 }
 
-void testBadgerReverse()
+void testBadgerReverse(uint8_t duty)
 {
     if (currentState != VehicleState::ARMED)
     {
@@ -94,5 +94,5 @@ void testBadgerReverse()
         return;
     }
 
-    startReverseTest();
+    startReverseTest(duty);
 }

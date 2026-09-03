@@ -44,8 +44,9 @@ void setup()
 void loop()
 {
     CommandID command;
+    uint8_t commandData;
 
-    if (receiveCommand(command))
+    if (receiveCommand(command, commandData))
     {
         lastValidCommand = millis();
 

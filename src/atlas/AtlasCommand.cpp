@@ -6,6 +6,47 @@ void inputCommands();
 void sendHelp();
 void sendUnknown(String input);
 
+namespace
+{
+    bool parseDuty(String input, uint8_t& duty)
+    {
+        input.trim();
+
+        int spaceIndex = input.lastIndexOf(' ');
+
+        if (spaceIndex < 0)
+        {
+            return false;
+        }
+
+        String dutyText = input.substring(spaceIndex + 1);
+        dutyText.trim();
+
+        if (dutyText.length() == 0)
+        {
+            return false;
+        }
+
+        for (size_t index = 0; index < dutyText.length(); index++)
+        {
+            if (dutyText[index] < '0' || dutyText[index] > '9')
+            {
+                return false;
+            }
+        }
+
+        long parsedDuty = dutyText.toInt();
+
+        if (parsedDuty < 0 || parsedDuty > 255)
+        {
+            return false;
+        }
+
+        duty = static_cast<uint8_t>(parsedDuty);
+        return true;
+    }
+}
+
 void startMessage()
 {
   Serial.println("==============");
@@ -23,8 +64,8 @@ void inputCommands()
   Serial.println("2. DISARM");
   Serial.println("3. STATUS");
   Serial.println("4. HELP");
-  Serial.println("5. TEST FORWARD");
-  Serial.println("6. TEST REVERSE");
+  Serial.println("5 <0-255>. TEST FORWARD");
+  Serial.println("6 <0-255>. TEST REVERSE");
   Serial.println("");
 }
 
@@ -71,15 +112,13 @@ CommandID parseCommand(String input)
     return CommandID::HELP;
     }
 
-  if (input == "TEST FORWARD" || input == "5")
+  if (input == "TEST FORWARD" || input == "5" || input.startsWith("TEST FORWARD ") || input.startsWith("5 "))
     {
-    // Serial.println("[CMD] 4");
     return CommandID::TEST_FORWARD;
     }
 
-  if (input == "TEST REVERSE" || input == "6")
+  if (input == "TEST REVERSE" || input == "6" || input.startsWith("TEST REVERSE ") || input.startsWith("6 "))
     {
-    // Serial.println("[CMD] 4");
     return CommandID::TEST_REVERSE;
     }
 
@@ -93,11 +132,24 @@ void executeCommand(CommandID userCommand, String input)
   case CommandID::ARM:  
   case CommandID::DISARM:
   case CommandID::STATUS:
+    sendCommand(userCommand);
+    break;
+
   // Test motor actuation
   case CommandID::TEST_FORWARD:
   case CommandID::TEST_REVERSE:
-    sendCommand(userCommand);
+  {
+    uint8_t duty;
+
+    if (!parseDuty(input, duty))
+    {
+        Serial.println("Enter speed as: 5 <0-255> or 6 <0-255>");
+        break;
+    }
+
+    sendCommand(userCommand, duty);
     break;
+  }
 
   case CommandID::HELP:
     sendHelp();

@@ -6,17 +6,19 @@
 
 namespace
 {
-  bool receiveFramePayload(uint8_t& payload)
+  bool receiveFramePayload(uint8_t& payload, uint8_t& data)
   {
     enum class ReceiveStep
     {
       WAITING_FOR_HEADER,
       WAITING_FOR_PAYLOAD,
+      WAITING_FOR_DATA,
       WAITING_FOR_FOOTER
     };
 
     static ReceiveStep step = ReceiveStep::WAITING_FOR_HEADER;
     static uint8_t receivedPayload = 0;
+    static uint8_t receivedData = 0;
 
     while (transportAvailable(1))
     {
@@ -38,17 +40,24 @@ namespace
 
       case ReceiveStep::WAITING_FOR_PAYLOAD:
         receivedPayload = byte;
+        step = ReceiveStep::WAITING_FOR_DATA;
+        break;
+
+      case ReceiveStep::WAITING_FOR_DATA:
+        receivedData = byte;
         step = ReceiveStep::WAITING_FOR_FOOTER;
         break;
 
       case ReceiveStep::WAITING_FOR_FOOTER:
-        if (byte ==PACKET_FOOTER)
+        if (byte == PACKET_FOOTER)
         {
           payload = receivedPayload;
+          data = receivedData;
           step = ReceiveStep::WAITING_FOR_HEADER;
           return true;
         }
 
+        // Discard invalid partial frame and search for new header
         step = (byte == PACKET_HEADER)
           ? ReceiveStep::WAITING_FOR_PAYLOAD
           : ReceiveStep::WAITING_FOR_HEADER;
@@ -59,12 +68,13 @@ namespace
   }
 }
 
-void sendCommand(CommandID command)
+void sendCommand(CommandID command, uint8_t data)
 {
   CommandPacket packet
   {
     PACKET_HEADER,
     command,
+    data,
     PACKET_FOOTER
   };
 
@@ -82,11 +92,12 @@ void sendHeartbeatAck()
   sendVehicleState(VehicleState::HEARTBEAT_ACK);
 }
 
-bool receiveCommand(CommandID& command)
+bool receiveCommand(CommandID& command, uint8_t& data)
 {
   uint8_t payload;
+  uint8_t receivedData;
 
-  if (!receiveFramePayload(payload))
+  if (!receiveFramePayload(payload, receivedData))
   {
       return false;
   }
@@ -103,6 +114,7 @@ bool receiveCommand(CommandID& command)
       case CommandID::TEST_REVERSE:
       case CommandID::HEARTBEAT:
           command = receivedCommand;
+          data = receivedData;
           return true;
 
       default:
@@ -110,23 +122,25 @@ bool receiveCommand(CommandID& command)
   }
 }
 
-void sendVehicleState(VehicleState state)
+void sendVehicleState(VehicleState state, uint8_t data)
 {
   VehicleStatePacket packet
   {
     PACKET_HEADER,
     state,
+    data,
     PACKET_FOOTER
   };
 
   transportSend(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
 }
 
-bool receiveVehicleState(VehicleState& state)
+bool receiveVehicleState(VehicleState& state, uint8_t& data)
 {
   uint8_t payload;
+  uint8_t receivedData;
 
-  if (!receiveFramePayload(payload))
+  if (!receiveFramePayload(payload, receivedData))
   {
       return false;
   }
@@ -143,6 +157,7 @@ bool receiveVehicleState(VehicleState& state)
       case VehicleState::NOT_AVAIL:
       case VehicleState::HEARTBEAT_ACK:
           state = receivedState;
+          data = receivedData;
           return true;
 
       default:

@@ -3,12 +3,11 @@
 #include "Badger.h"
 
 
-void handleCommand(CommandID command)
+void handleCommand(CommandID command, uint8_t commandData)
 {
     switch (command)
     {
     case CommandID::ARM:
-        Serial.println("[RX] 1");
         armBadger();
         break;
 
@@ -17,16 +16,15 @@ void handleCommand(CommandID command)
         break;
     
     case CommandID::STATUS:
-        Serial.println("[RX] 3");
         printBadgerStatus();
         break;
 
     case CommandID::TEST_FORWARD:
-        testBadgerForward();
+        testBadgerForward(commandData);
         break;
 
     case CommandID::TEST_REVERSE:
-        testBadgerReverse();
+        testBadgerReverse(commandData);
         break;
 
     default:

@@ -14,5 +14,5 @@ void comFault();
 
 VehicleState getBadgerState();
 
-void testBadgerForward();
-void testBadgerReverse();
+void testBadgerForward(uint8_t duty);
+void testBadgerReverse(uint8_t duty);

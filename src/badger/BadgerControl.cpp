@@ -19,7 +19,7 @@ namespace
     constexpr uint8_t R_MOTOR_PWM_CHANNEL = 1;
     constexpr uint32_t MOTOR_PWM_FREQUENCY_HZ = 1000;
     constexpr uint8_t MOTOR_PWM_RESOLUTION_BITS = 8;
-    constexpr uint8_t TEST_MOTOR_SPEED = 128;
+    // constexpr uint8_t TEST_MOTOR_SPEED = 128;
 
     bool testActive = false;
     uint32_t testStartMs = 0;
@@ -43,24 +43,26 @@ void badgerControlSetup()
     stopMotors();
 }
 
-void moveForward()
+void moveForward(uint8_t duty)
 {
     digitalWrite(F_MOTOR_IN1_PIN, LOW);
     digitalWrite(F_MOTOR_IN2_PIN, HIGH);
+
     digitalWrite(R_MOTOR_IN1_PIN, HIGH);
     digitalWrite(R_MOTOR_IN2_PIN, LOW);
 
-    setMotorSpeed(TEST_MOTOR_SPEED);
+    setMotorSpeed(duty);
 }
 
-void moveBackward()
+void moveBackward(uint8_t duty)
 {
-    digitalWrite(F_MOTOR_IN1_PIN, LOW);
-    digitalWrite(F_MOTOR_IN2_PIN, HIGH);
-    digitalWrite(R_MOTOR_IN1_PIN, HIGH);
-    digitalWrite(R_MOTOR_IN2_PIN, LOW);
+    digitalWrite(F_MOTOR_IN1_PIN, HIGH);
+    digitalWrite(F_MOTOR_IN2_PIN, LOW);
 
-    setMotorSpeed(TEST_MOTOR_SPEED);
+    digitalWrite(R_MOTOR_IN1_PIN, LOW);
+    digitalWrite(R_MOTOR_IN2_PIN, HIGH);
+
+    setMotorSpeed(duty);
 }
 
 void stopMotors()
@@ -75,16 +77,16 @@ void stopMotors()
     testActive = false;
 }
 
-void startForwardTest()
+void startForwardTest(uint8_t duty)
 {
-    moveForward();
+    moveForward(duty);
     testStartMs = millis();
     testActive = true;
 }
 
-void startReverseTest()
+void startReverseTest(uint8_t duty)
 {
-    moveBackward();
+    moveBackward(duty);
     testStartMs = millis();
     testActive = true;
 }
