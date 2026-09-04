@@ -5,6 +5,14 @@
 
 VehicleState currentState = VehicleState::BOOTING;
 
+namespace
+{
+    constexpr uint32_t DRIVE_COMMAND_TIMEOUT_MS = 300;
+
+    uint32_t lastDriveCommandMs = 0;
+    bool driveCommandActive = false;
+}
+
 void initializeBadger()
 {
     currentState = VehicleState::DISARMED;
@@ -30,6 +38,8 @@ void armBadger()
 
 void disarmBadger()
 {
+    stopMotors();
+    driveCommandActive = false;
     currentState = VehicleState::DISARMED;
 
     sendVehicleState(VehicleState::DISARMED);
@@ -38,6 +48,10 @@ void disarmBadger()
 
 void comFault()
 {
+    stopMotors();
+    driveCommandActive = false;
+    currentState = VehicleState::DISARMED;
+
     sendVehicleState(VehicleState::COM_FAULT);
     Serial.println("Com Fault");
 }
@@ -83,6 +97,7 @@ void testBadgerForward(uint8_t duty)
         return;
     }
 
+    driveCommandActive = false;
     startForwardTest(duty);
 }
 
@@ -94,5 +109,49 @@ void testBadgerReverse(uint8_t duty)
         return;
     }
 
+    driveCommandActive = false;
     startReverseTest(duty);
+}
+
+void driveBadger(int8_t throttle)
+{
+    lastDriveCommandMs = millis();
+    driveCommandActive = (throttle != 0);
+    
+    if (throttle == 0)
+    {
+        stopMotors();
+        return;
+    }
+    
+    if (currentState != VehicleState::ARMED)
+    {
+        sendVehicleState(VehicleState::NOT_AVAIL);
+        return;
+    }
+
+    //Also cancel any motor actuation
+    stopMotors();
+
+    uint8_t duty = static_cast<uint8_t>((throttle > 0) ? throttle : -static_cast<int>(throttle));
+
+    if (throttle > 0)
+    {
+        moveForward(duty);
+    }
+    else
+    {
+        moveBackward(duty);
+    }
+}
+
+void updateBadgerDriveWatchdog()
+{
+    if (driveCommandActive && millis() - lastDriveCommandMs >= DRIVE_COMMAND_TIMEOUT_MS)
+    {
+        stopMotors();
+        driveCommandActive = false;
+
+        Serial.println("Drive command timeout: motors stopped.");
+    }
 }

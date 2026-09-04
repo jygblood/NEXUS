@@ -16,3 +16,7 @@ VehicleState getBadgerState();
 
 void testBadgerForward(uint8_t duty);
 void testBadgerReverse(uint8_t duty);
+
+void driveBadger(int8_t throttle);
+
+void updateBadgerDriveWatchdog();

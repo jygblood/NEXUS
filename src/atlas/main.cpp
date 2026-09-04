@@ -2,17 +2,27 @@
 #include <WiFi.h>
 
 #include "atlas/AtlasCommand.h"
+#include "atlas/AtlasInput.h"
+#include "atlas/AtlasControl.h"
 #include "transport/Transport.h"
 #include "common/Communication.h"
 
 
 bool vehicleReady = false;
 
+bool vehicleArmed = false;
+bool joystickNeutralSeen = false;
+
+bool driveCommandSent = false;
+int8_t lastSentThrottle = 0;
+uint32_t lastDriveCommandSent = 0;
+
 uint32_t lastHeartbeatSent = 0;
 uint32_t lastValidResponse = 0;
 
 constexpr uint32_t HEARTBEAT_INTERVAL_MS = 500;
 constexpr uint32_t LINK_TIMEOUT_MS = 2000;
+constexpr uint32_t DRIVE_COMMAND_INTERVAL_MS = 100;
 
 void setup()
 {
@@ -22,16 +32,30 @@ void setup()
 
     // display setup
     transportSetup();
+    atlasInputSetup();
     startMessage();
     Serial.println("Waiting for vehicle link....");
 }
 
 void loop()
 {
-    // // Automatic [TX] for Firefly debugging
-    // CommandID userCommand = CommandID::STATUS;
-    // sendCommand(userCommand);
-    // delay(5000);
+    AtlasInputState atlasInput = readAtlasInputs();
+    int8_t throttle = getDriveThrottle(atlasInput);
+    
+    static uint32_t lastInputPrintMs = 0;
+    constexpr uint32_t INPUT_PRINT_INTERVAL_MS = 250;
+
+    if (millis() - lastInputPrintMs >= INPUT_PRINT_INTERVAL_MS)
+    {
+        lastInputPrintMs = millis();
+
+        // Serial.print("X: ");
+        // Serial.print(atlasInput.joystickX);
+        // Serial.print(" Y: ");
+        // Serial.print(atlasInput.joystickY);
+        // Serial.print(" Throttle: ");
+        // Serial.println(static_cast<int>(throttle));
+    }
 
     VehicleState state;
     uint8_t stateData;
@@ -46,14 +70,26 @@ void loop()
             Serial.println("Vehicle link synchronized.");
         }
         
-        // // debug ACK check
-        // if (state == VehicleState::HEARTBEAT_ACK)
-        // {
-        //     Serial.println("[HB] ACK received");
-        // }
         
         if (state != VehicleState::HEARTBEAT_ACK)
         {
+            if (state == VehicleState::ARMED && !vehicleArmed)
+            {
+                vehicleArmed = true;
+
+                // After each arm event, teh joystick must return to neutral before dirivng enabled
+                joystickNeutralSeen = false;
+            }
+            else if (state == VehicleState::DISARMED ||
+                    state == VehicleState::COM_FAULT ||
+                    state == VehicleState::FAULT ||
+                    state == VehicleState::BOOTING)
+            {
+                vehicleArmed = false;
+                joystickNeutralSeen = false;
+                driveCommandSent = false;
+            }
+            
             printVehicleState(state);
         }
     }
@@ -67,7 +103,38 @@ void loop()
     if (vehicleReady && millis() - lastValidResponse >= LINK_TIMEOUT_MS)
     {
         vehicleReady = false;
+        vehicleArmed = false;
+        joystickNeutralSeen = false;
+        driveCommandSent = false;
         Serial.println("Vehicle link lost.");
+    }
+    
+    if (vehicleReady && vehicleArmed)
+    {
+        if (throttle == 0)
+        {
+            joystickNeutralSeen = true;
+        }
+
+        if (joystickNeutralSeen)
+        {
+            bool throttleChanged = !driveCommandSent || throttle != lastSentThrottle;
+
+            bool refreshRequired = (throttle != 0) && (millis() - lastDriveCommandSent >= DRIVE_COMMAND_INTERVAL_MS);
+
+            if (throttleChanged || refreshRequired)
+            {
+                sendCommand(CommandID::DRIVE, encodeDriveThrottle(throttle));
+
+                lastSentThrottle = throttle;
+                lastDriveCommandSent = millis();
+                driveCommandSent = true;
+            }
+        }
+    }
+    else
+    {
+        driveCommandSent = false;
     }
     
     static String input;

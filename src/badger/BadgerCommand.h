@@ -3,4 +3,4 @@
 #include <Arduino.h>
 #include "protocol/Packet.h"
 
-void handleCommand(CommandID command, uint8_t comandData);
+void handleCommand(CommandID command, uint8_t commandData);

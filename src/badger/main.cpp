@@ -63,5 +63,6 @@ void loop()
         comFault();
     }
 
+    updateBadgerDriveWatchdog();
     updateBadgerControl();
 }

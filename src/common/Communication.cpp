@@ -112,6 +112,7 @@ bool receiveCommand(CommandID& command, uint8_t& data)
       // Testing motor actuation
       case CommandID::TEST_FORWARD:
       case CommandID::TEST_REVERSE:
+      case CommandID::DRIVE:
       case CommandID::HEARTBEAT:
           command = receivedCommand;
           data = receivedData;

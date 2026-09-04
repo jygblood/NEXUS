@@ -27,6 +27,10 @@ void handleCommand(CommandID command, uint8_t commandData)
         testBadgerReverse(commandData);
         break;
 
+    case CommandID::DRIVE:
+        driveBadger(decodeDriveThrottle(commandData));
+        break;
+
     default:
         comFault();
         Serial.println("Unknown command");
